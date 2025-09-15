@@ -1,3 +1,63 @@
-#SPDX-License-Identifier: MIT-0
 ---
-# tasks file for awx_deploy
+- name: Ensure git and make are installed
+  package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - git
+    - make
+
+- name: Clone awx-operator repo
+  git:
+    repo: "https://github.com/ansible/awx-operator.git"
+    dest: "./awx-operator"
+    version: "tags/{{ awx_deploy_version }}"
+    force: yes
+
+- name: Run make deploy
+  command: make deploy
+  args:
+    chdir: "./awx-operator"
+
+- name: Create kustomization.yaml
+  copy:
+    dest: "./awx-operator/kustomization.yaml"
+    content: |
+          apiVersion: kustomize.config.k8s.io/v1beta1
+          kind: Kustomization
+          resources:
+            - github.com/ansible/awx-operator/config/default?ref={{ awx_deploy_version }}
+          images:
+            - name: quay.io/ansible/awx-operator
+              newTag: {{ awx_deploy_version }}
+          namespace: {{ awx_deploy_namespace }}
+
+- name: Apply operator manifests
+  command: oc apply -k .
+  args:
+   chdir: "./awx-operator"
+
+- name: Create AWX instance manifest
+  copy:
+    dest: "./awx-operator/awx-demo.yml"
+    content: |
+          apiVersion: awx.ansible.com/v1beta1
+          kind: AWX
+          metadata:
+            name: {{ awx_deploy_instance_name }}
+          spec:
+            service_type: clusterip
+            ingress_type: {{ ingress_type }}
+
+- name: Append AWX instance to kustomization.yaml
+  lineinfile:
+    path: "./awx-operator/kustomization.yaml"
+    line: "  - awx-demo.yml"
+    insertafter: "resources:"
+    state: present
+
+- name: Deploy AWX instance
+  command: oc apply -k .
+  args:
+    chdir: "./awx-operator"
+

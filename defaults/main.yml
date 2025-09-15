@@ -1,3 +1,9 @@
 #SPDX-License-Identifier: MIT-0
 ---
 # defaults file for awx_deploy
+awx_deploy_version: "2.19.1"   # must be >= 24.0.0
+awx_deploy_namespace: "awx"
+awx_deploy_instance_name: "awx-demo"
+awx_deploy_ingress_type: "Route"
+
+
