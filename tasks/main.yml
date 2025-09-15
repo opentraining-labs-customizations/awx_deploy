@@ -47,7 +47,7 @@
             name: {{ awx_deploy_instance_name }}
           spec:
             service_type: clusterip
-            ingress_type: {{ ingress_type }}
+            ingress_type: {{ awx_deploy_ingress_type }}
 
 - name: Append AWX instance to kustomization.yaml
   lineinfile:
