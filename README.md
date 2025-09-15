@@ -13,7 +13,7 @@ This role deploys the **AWX Operator** and an **AWX instance** on OpenShift.
 ## Role Variables (defaults)
 
 ```yaml
-awx_version: "24.0.0"          # Must be >= 24.0.0
+awx_version: "2.19.1"          # Must be >= 24.0.0
 namespace: "awx"               # OpenShift namespace
 awx_instance_name: "awx-demo"  # AWX CR name
 ingress_type: "Route"          # Route | ClusterIP | LoadBalancer

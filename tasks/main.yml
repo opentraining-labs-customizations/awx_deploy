@@ -1,5 +1,6 @@
 ---
 - name: Ensure git and make are installed
+  become: true
   package:
     name: "{{ item }}"
     state: present
@@ -8,6 +9,7 @@
     - make
 
 - name: Clone awx-operator repo
+  become: true
   git:
     repo: "https://github.com/ansible/awx-operator.git"
     dest: "./awx-operator"
@@ -15,11 +17,13 @@
     force: yes
 
 - name: Run make deploy
+  become: true
   command: make deploy
   args:
     chdir: "./awx-operator"
 
 - name: Create kustomization.yaml
+  become: true
   copy:
     dest: "./awx-operator/kustomization.yaml"
     content: |
@@ -33,11 +37,13 @@
           namespace: {{ awx_deploy_namespace }}
 
 - name: Apply operator manifests
+  become: true
   command: oc apply -k .
   args:
    chdir: "./awx-operator"
 
 - name: Create AWX instance manifest
+  become: true
   copy:
     dest: "./awx-operator/awx-demo.yml"
     content: |
@@ -50,6 +56,7 @@
             ingress_type: {{ awx_deploy_ingress_type }}
 
 - name: Append AWX instance to kustomization.yaml
+  become: true
   lineinfile:
     path: "./awx-operator/kustomization.yaml"
     line: "  - awx-demo.yml"
@@ -57,6 +64,7 @@
     state: present
 
 - name: Deploy AWX instance
+  become: true
   command: oc apply -k .
   args:
     chdir: "./awx-operator"
